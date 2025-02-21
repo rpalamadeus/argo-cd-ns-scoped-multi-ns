@@ -1,0 +1,62 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-22.04
+
+    steps:
+
+    - uses: actions/checkout@v4
+  
+    - name: Generate version
+      id: version_step
+      run: echo "version="$(cat VERSION_ARGOCD)".$(date +%s)" >> $GITHUB_OUTPUT
+
+    - name: Build the Docker image
+      run: |
+        VERSION=${{ steps.version_step.outputs.version }}
+        ls
+        pwd
+        sh ./script_10_develop.sh
+        sh ./script_30_prebuild.sh
+        cd argo-cd
+        docker build . --file Dockerfile --tag ${{ secrets.DOCKER_HUB_USERNAME }}/argocd:${VERSION}
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+    - name: Push image to Docker Hub
+      run: |
+        VERSION=${{ steps.version_step.outputs.version }}
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/argocd:${VERSION}
+        docker save ${{ secrets.DOCKER_HUB_USERNAME }}/argocd:${VERSION} -o myapp.tar
+
+    - name: Log out from Docker Hub
+      run: docker logout
+
+    # - name: Get release
+    #   id: get_release
+    #   uses: bruceadams/get-release@v1.3.2
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+
+    # - name: Upload release binary
+    #   uses: actions/upload-release-asset@v1.0.2
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.get_release.outputs.upload_url }}
+    #     asset_path: myapp.tar
+    #     asset_name: ${{ secrets.DOCKER_HUB_USERNAME }}/argocd:${VERSION}.tar
+    #     asset_content_type: application/x-tar
