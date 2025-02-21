@@ -1,0 +1,4 @@
+[submodule "argo-cd"]
+	path = argo-cd
+	url = https://github.com/argoproj/argo-cd.git
+	branch = v2.14.2
