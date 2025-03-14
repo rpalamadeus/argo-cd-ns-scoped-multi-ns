@@ -1,0 +1,390 @@
+
+# Service Account for the Kubernetes API Server
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-apiserver-sa
+  namespace: WWWWWW
+---
+# Service Account for etcd
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: etcd-sa
+  namespace: WWWWWW
+---
+# StatefulSet for etcd-alt
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: etcd-alt
+  namespace: WWWWWW
+  annotations:
+    acs.amadeus.com/first-line-support: fcg-SDSDeploymentManager
+    acs.amadeus.com/operational-owner: TEC-TPE-PSV-CDX-DPE-DTE-SDS
+    acs.amadeus.com/owner: TEC-TPE-PSV-CDX-DPE-DTE-SDS
+    acs.amadeus.com/service-id: d7563d20-040a-11ec-ad3e-0050560c4716
+  labels:
+    acs.amadeus.com/environment: tst
+    acs.amadeus.com/macro-phase: TST
+    acs.amadeus.com/securityZone: tnz
+    app.kubernetes.io/component: etcd-alt
+    app.kubernetes.io/name: etcd-alt
+    app.kubernetes.io/part-of: argocd
+    app.kubernetes.io/version: 2.14.2
+    argocd.argoproj.io/instance: WWWWWW
+spec:
+  serviceName: etcd-alt
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etcd-alt
+  template:
+    metadata:
+      annotations:
+        acs.amadeus.com/first-line-support: fcg-SDSDeploymentManager
+        acs.amadeus.com/operational-owner: TEC-TPE-PSV-CDX-DPE-DTE-SDS
+        acs.amadeus.com/owner: TEC-TPE-PSV-CDX-DPE-DTE-SDS
+        acs.amadeus.com/service-id: d7563d20-040a-11ec-ad3e-0050560c4716
+      labels:
+        acs.amadeus.com/environment: tst
+        acs.amadeus.com/macro-phase: TST
+        acs.amadeus.com/securityZone: tnz
+        app.kubernetes.io/component: etcd-alt
+        app.kubernetes.io/name: etcd-alt
+        app.kubernetes.io/part-of: argocd
+        app.kubernetes.io/version: 2.14.2
+        argocd.argoproj.io/instance: WWWWWW
+        app: etcd-alt
+    spec:
+      serviceAccountName: etcd-sa
+      containers:
+        - name: etcd
+          image: QQQQQQ/docker-prod-dma/swb/deployment-service/argocd/etcd:v3.5.0.2
+          command:
+            - etcd
+            - --name
+            - etcd-alt
+            - --data-dir
+            - /var/lib/etcd
+            - --listen-client-urls
+            - http://0.0.0.0:2379
+            - --advertise-client-urls
+            - http://etcd-alt.WWWWWW.svc.cluster.local:2379
+          ports:
+            - containerPort: 2379
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/etcd
+          resources:
+            limits:
+              ephemeral-storage: 200Mi
+              memory: 30Gi
+            requests:
+              cpu: 200m
+              ephemeral-storage: 200Mi
+              memory: 4Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 4Gi
+---
+# Service for etcd-alt
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd-alt
+  namespace: WWWWWW
+  labels:
+    app.kubernetes.io/component: etcd-alt
+    app.kubernetes.io/part-of: etcd-alt
+    app.kubernetes.io/version: 2.14.2
+    argocd.argoproj.io/instance: WWWWWW
+spec:
+  selector:
+    app: etcd-alt
+  ports:
+    - name: client
+      port: 2379
+      targetPort: 2379
+---
+# Deployment for kube-apiserver-alt
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-apiserver-alt
+  namespace: WWWWWW
+  annotations:
+    acs.amadeus.com/first-line-support: fcg-SDSDeploymentManager
+    acs.amadeus.com/operational-owner: TEC-TPE-PSV-CDX-DPE-DTE-SDS
+    acs.amadeus.com/owner: TEC-TPE-PSV-CDX-DPE-DTE-SDS
+    acs.amadeus.com/service-id: d7563d20-040a-11ec-ad3e-0050560c4716
+  labels:
+    acs.amadeus.com/environment: tst
+    acs.amadeus.com/macro-phase: TST
+    acs.amadeus.com/securityZone: tnz
+    app.kubernetes.io/component: kube-apiserver-alt
+    app.kubernetes.io/name: kube-apiserver-alt
+    app.kubernetes.io/part-of: argocd
+    app.kubernetes.io/version: 2.14.2
+    argocd.argoproj.io/instance: WWWWWW
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kube-apiserver-alt
+  template:
+    metadata:
+      annotations:
+        acs.amadeus.com/first-line-support: fcg-SDSDeploymentManager
+        acs.amadeus.com/operational-owner: TEC-TPE-PSV-CDX-DPE-DTE-SDS
+        acs.amadeus.com/owner: TEC-TPE-PSV-CDX-DPE-DTE-SDS
+        acs.amadeus.com/service-id: d7563d20-040a-11ec-ad3e-0050560c4716
+      labels:
+        acs.amadeus.com/environment: tst
+        acs.amadeus.com/macro-phase: TST
+        acs.amadeus.com/securityZone: tnz
+        app.kubernetes.io/component: kube-apiserver-alt
+        app.kubernetes.io/name: kube-apiserver-alt
+        app.kubernetes.io/part-of: argocd
+        app.kubernetes.io/version: 2.14.2
+        argocd.argoproj.io/instance: WWWWWW
+        app: kube-apiserver-alt
+    spec:
+      serviceAccountName: kube-apiserver-sa
+      containers:
+        - name: kube-apiserver
+          image: QQQQQQ/docker-prod-dma/swb/deployment-service/argocd/kube-apiserver:v1.28.0.7
+          command:
+            - /usr/local/bin/kube-apiserver
+            - --etcd-servers=http://etcd-alt.WWWWWW.svc.cluster.local:2379
+            - --bind-address=0.0.0.0
+            - --advertise-address=0.0.0.0
+            - --secure-port=6443
+            - --allow-privileged=true
+            - --disable-admission-plugins=ServiceAccount
+            - --runtime-config=api/all=true,apiextensions.k8s.io/v1=true
+            - --service-cluster-ip-range=10.96.0.0/12
+            - --token-auth-file=/etc/kubernetes/tokens/token.csv
+            - --service-account-issuer=https://kube-apiserver-alt.WWWWWW.svc.cluster.local
+            - --service-account-signing-key-file=/etc/kubernetes/pki/tls.key
+            - --service-account-key-file=/etc/kubernetes/pki/tls.crt
+            - --tls-cert-file=/etc/kubernetes/pki/tls.crt
+            - --tls-private-key-file=/etc/kubernetes/pki/tls.key
+          securityContext:
+            capabilities:
+              add: ["NET_BIND_SERVICE"]
+              #,"NET_ADMIN"]
+          ports:
+            - containerPort: 6443
+          volumeMounts:
+            - name: sa-keys
+              mountPath: /etc/kubernetes/pki
+              readOnly: true
+            - name: token-volume
+              mountPath: /etc/kubernetes/tokens
+              readOnly: true
+          resources:
+            limits:
+              ephemeral-storage: 200Mi
+              memory: 30Gi
+            requests:
+              cpu: 200m
+              ephemeral-storage: 200Mi
+              memory: 4Gi
+      volumes:
+      - name: sa-keys
+        secret:
+          secretName: service-account-key-secret
+      - name: token-volume
+        configMap:
+          name: kube-apiserver-token
+---
+# Service for kube-apiserver-alt (LoadBalancer to expose externally)
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-apiserver-alt
+  namespace: WWWWWW
+  labels:
+    app.kubernetes.io/component: kube-apiserver-alt
+    app.kubernetes.io/part-of: kube-apiserver-alt
+    app.kubernetes.io/version: 2.14.2
+    argocd.argoproj.io/instance: WWWWWW
+spec:
+  selector:
+    app: kube-apiserver-alt
+  ports:
+    - name: https
+      port: 443
+      targetPort: 6443
+---
+# Token authentication secret for kube-apiserver-alt
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kube-apiserver-tokens
+  namespace: WWWWWW
+type: Opaque
+stringData:
+  token.csv: |
+    1234567890abcdef,api-user,uid-1001,system:masters
+---
+# Role for API Server to access etcd-alt
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: etcd-access-role
+  namespace: WWWWWW
+rules:
+  - apiGroups: [""]
+    resources:
+      - endpoints
+      - services
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - delete
+---
+# RoleBinding for API Server to access etcd-alt
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: etcd-access-rolebinding
+  namespace: WWWWWW
+subjects:
+  - kind: ServiceAccount
+    name: kube-apiserver-sa
+    namespace: WWWWWW
+roleRef:
+  kind: Role
+  name: etcd-access-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# ClusterRole for API Server to manage ConfigMaps, Secrets, CRDs
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: ClusterRole
+# metadata:
+#   name: kube-apiserver-alt-role
+# rules:
+#   - apiGroups: [""]
+#     resources:
+#       - configmaps
+#       - secrets
+#     verbs:
+#       - get
+#       - list
+#       - watch
+#       - create
+#       - update
+#       - delete
+#   - apiGroups: ["apiextensions.k8s.io"]
+#     resources:
+#       - customresourcedefinitions
+#     verbs:
+#       - get
+#       - list
+#       - watch
+#       - create
+#       - update
+#       - delete
+---
+# ClusterRoleBinding for API Server
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: ClusterRoleBinding
+# metadata:
+#   name: kube-apiserver-alt-rolebinding
+# subjects:
+#   - kind: ServiceAccount
+#     name: kube-apiserver-sa
+#     namespace: WWWWWW
+# roleRef:
+#   kind: ClusterRole
+#   name: kube-apiserver-alt-role
+#   apiGroup: rbac.authorization.k8s.io
+---
+# Role for etcd StatefulSet to manage storage and services
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: etcd-statefulset-role
+  namespace: WWWWWW
+rules:
+  - apiGroups: [""]
+    resources:
+      - persistentvolumeclaims
+      - services
+      - endpoints
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - delete
+---
+# RoleBinding for etcd StatefulSet
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: etcd-statefulset-rolebinding
+  namespace: WWWWWW
+subjects:
+  - kind: ServiceAccount
+    name: etcd-sa
+    namespace: WWWWWW
+roleRef:
+  kind: Role
+  name: etcd-statefulset-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+  namespace: WWWWWW
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: service-account-key
+  namespace: WWWWWW
+spec:
+  secretName: service-account-key-secret
+  duration: 8760h # 1 year
+  renewBefore: 720h # 30 days before expiration
+  subject:
+    organizations:
+      - kube-service-accounts
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
+  dnsNames:
+    - kubernetes.default.svc
+    - kubernetes.default
+    - kubernetes
+    - localhost
+    - kube-apiserver-alt.WWWWWW.svc.cluster.local
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-apiserver-token
+  namespace: WWWWWW
+data:
+  token.csv: |
+    abcd1234,admin,admin-uid,system:masters
